@@ -1,4 +1,6 @@
-public import java.io.IOException;
+public
+
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Enumeration;
@@ -6,23 +8,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Firewall {
-    // Configuration file containing the firewall rules
-    private static final String CONFIG_FILE = "firewall.config";
-    private static final Map<InetAddress, InetAddress> NAT_TABLE = new HashMap<>();
+    private static String CONFIG_FILE = "firewall.config";
+    private static Map<InetAddress, InetAddress> NAT_TABLE = new HashMap<>();
     private static VPNConnection vpnConnection;
     private static FirewallInterface firewallInterface;
 
     public static void main(String[] args) throws IOException {
-        // Get the network interface to listen on
         NetworkInterface networkInterface = getNetworkInterface();
-
-        // Create a packet filter based on the configuration file
         PacketFilter packetFilter = new PacketFilter(CONFIG_FILE);
-
-        // Initialize the firewall rule management interface
         firewallInterface = new FirewallInterface();
 
-        // Listen for incoming packets on the specified network interface
         while (true) {
             Packet packet = networkInterface.receive();
             if (packet != null) {
@@ -37,19 +32,17 @@ public class Firewall {
                     if (dstIP != null) {
                         packet.setDestinationAddress(dstIP);
                     }
-                    // Apply the firewall rules to the packet
                     boolean allowed = packetFilter.apply(packet, false);
                     if (allowed) {
                         networkInterface.send(packet);
                     }
                 }
-                // Log the packet and update the firewall statistics
                 firewallInterface.logPacket(packet, allowed);
             }
         }
     }
+
     private static NetworkInterface getNetworkInterface() throws IOException {
-        // Iterate through all available network interfaces
         Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
         while (interfaces.hasMoreElements()) {
             NetworkInterface networkInterface = interfaces.nextElement();
@@ -61,7 +54,56 @@ public class Firewall {
     }
 }
 
-// includes a FirewallInterface class that provides a way for users to manage 
-//and configure the firewall rules, as well as view the firewall statistics and logs. 
-//It also includes support for network address translation (NAT) and VPN connectivity. Firewall
-// need to include packages & add firewall rules to config files
+// The code starts by importing necessary classes, including
+// `java.io.IOException`, `java.net.InetAddress`, `java.net.NetworkInterface`,
+// and `java.util` packages.
+
+// The class `Firewall` is defined, which serves as the main entry point for
+// the program.
+
+// Several constant variables are declared, including the `CONFIG_FILE` (the
+// path to the firewall rules configuration file) and `NAT_TABLE` (a mapping of
+// source and destination IP addresses for Network Address Translation).
+
+// The `main` method is implemented, which is the starting point of the
+// program. It throws an `IOException` to handle any potential input/output
+// errors.
+
+// The `getNetworkInterface` method is called to retrieve the network
+// interface to listen on. It uses the `NetworkInterface.getNetworkInterfaces()`
+// method to iterate through all available network interfaces and checks if the
+// interface name is "eth0". If found, it returns the network interface.
+
+// The code creates an instance of `PacketFilter` using the `CONFIG_FILE` to
+// read and store the firewall rules.
+
+// The `FirewallInterface` object is instantiated to handle firewall rule
+// management and logging.
+
+// The program enters an infinite loop, continuously listening for incoming
+// packets on the specified network interface.
+
+// When a packet is received, it checks if a `vpnConnection` object exists
+// and if the packet is from the VPN (Virtual Private Network) using the
+// `isPacketFromVPN` method. If so, it applies the firewall rules to the packet
+// by calling `packetFilter.apply(packet, true)` to determine if it's allowed.
+// If allowed, the packet is sent through the VPN using
+// `vpnConnection.sendPacket(packet)`.
+
+// If the packet is not from the VPN, it checks if there is a corresponding
+// destination IP address in the NAT_TABLE (used for Network Address
+// Translation). If a match is found, the packet's destination address is
+// modified accordingly.
+
+// Next, the firewall rules are applied to the packet by calling
+// `packetFilter.apply(packet, false)` to determine if it's allowed. If allowed,
+// the packet is sent through the network interface using
+// `networkInterface.send(packet)`.
+
+// After processing the packet, the code logs the packet and updates
+// firewall statistics by calling `firewallInterface.logPacket(packet,
+// allowed)`.
+
+// The program continues to listen for incoming packets indefinitely,
+// repeating the process described above.
+
